@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JCA — Plano de Ação · Sinistros</title>
+  <style>
+    :root { --navy:#1d3061; --red:#c0392b; --border:#e0e0e0; --bg:#f5f6fa; --muted:#888; }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,sans-serif; background:var(--bg); color:#333; }
+
+    .header { background:var(--navy); padding:14px 24px; display:flex; align-items:center; gap:16px; }
+    .header img { height:32px; }
+    .header__title { color:white; font-weight:700; font-size:15px; }
+    .header__right  { margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .header select  { padding:5px 10px; border-radius:6px; border:none; font-size:13px; }
+
+    .container { max-width:860px; margin:28px auto; padding:0 16px 60px; }
+
+    .emp-card { background:white; border-radius:12px; padding:22px;
+                margin-bottom:18px; box-shadow:0 1px 6px rgba(0,0,0,.06); }
+    .emp-card.enviado { opacity:.7; pointer-events:none; }
+    .emp-card.enviado .textarea-wrap { position:relative; }
+    .emp-card.enviado .textarea-wrap::after {
+      content:"✅ Enviado";
+      position:absolute; top:8px; right:12px;
+      background:#e6f9ed; color:#1a7a3c;
+      font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px;
+    }
+
+    .emp-logo { height:40px; object-fit:contain; margin-bottom:14px; display:block; }
+
+    .ref-box { background:#f0f4ff; border-radius:8px; padding:12px 16px;
+               display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+    .ref-label { font-size:10px; font-weight:700; color:var(--muted);
+                 text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+    .ref-value { font-size:16px; font-weight:700; color:var(--navy); min-height:22px; }
+    .ref-value.empty { color:#ccc; font-style:italic; font-weight:400; font-size:13px; }
+
+    label { display:block; font-size:10px; font-weight:700; color:var(--muted);
+            text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+    textarea { width:100%; padding:10px 12px; border:1px solid var(--border);
+               border-radius:8px; font-size:13px; font-family:inherit;
+               color:var(--navy); resize:vertical; outline:none; line-height:1.6; }
+    textarea:focus { border-color:var(--navy); }
+    textarea:disabled { background:#f5f5f5; color:#999; cursor:not-allowed; }
+
+    .send-row { display:flex; align-items:center; gap:12px; margin-top:14px; }
+    .btn-enviar { padding:10px 28px; border-radius:8px; border:none;
+                  font-size:13px; font-family:inherit; cursor:pointer;
+                  font-weight:700; background:var(--navy); color:white; }
+    .btn-enviar:hover { opacity:.88; }
+    .btn-enviar:disabled { background:#aaa; cursor:not-allowed; }
+    .send-status { font-size:12px; font-weight:600; }
+    .send-status.ok  { color:#1a7a3c; }
+    .send-status.err { color:var(--red); }
+
+    .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
+
+    footer { text-align:center; color:var(--muted); font-size:11px; margin-top:32px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <img src="https://res.cloudinary.com/dln0ctawv/image/upload/v1779238658/JCA_1_mp1ic7.png" alt="JCA">
+  <span class="header__title">Plano de Ação — Sinistros</span>
+  <div class="header__right">
+    <label style="color:rgba(255,255,255,.7);font-size:11px;margin:0">MÊS</label>
+    <select id="sel-mes"></select>
+    <label style="color:rgba(255,255,255,.7);font-size:11px;margin:0">ANO</label>
+    <select id="sel-ano"></select>
+  </div>
+</div>
+
+<div class="container" id="container">
+  <div class="loading" id="loading">Carregando dados...</div>
+</div>
+
+<footer>JCA — Inteligência Operacional · Plano de Ação · Sinistros</footer>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ── Firebase config ─────────────────────────────────
+const fbApp = firebase.initializeApp({
+  apiKey:            "AIzaSyBoAgfudElHnMLPF9i9aplwc2sd9-zmT3E",
+  authDomain:        "apresentacoes-indicadores.firebaseapp.com",
+  projectId:         "apresentacoes-indicadores",
+  storageBucket:     "apresentacoes-indicadores.firebasestorage.app",
+  messagingSenderId: "508186104156",
+  appId:             "1:508186104156:web:a52ab3848db24c7555b199"
+});
+const db  = firebase.firestore();
+const COL = "planos_sinistros";
+
+const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const EMPS  = [
+  { id:"1001",        logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671790/1001_qisjtr_1_pzpzqw.png" },
+  { id:"catarinense", logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671813/AVC_zk4pe9_k4jgau.png" },
+  { id:"cometa",      logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671826/COM_folzln_ddghpr.png" }
+];
+
+// ── Seletores de período ────────────────────────────
+const now = new Date();
+const selMes = document.getElementById("sel-mes");
+const selAno = document.getElementById("sel-ano");
+
+MESES.forEach(function(m, i) {
+  const opt = document.createElement("option");
+  opt.value = m; opt.textContent = m;
+  if (i === (now.getMonth() + 11) % 12) opt.selected = true;
+  selMes.appendChild(opt);
+});
+[now.getFullYear() - 1, now.getFullYear()].forEach(function(a) {
+  const opt = document.createElement("option");
+  opt.value = a; opt.textContent = a;
+  if (a === now.getFullYear()) opt.selected = true;
+  selAno.appendChild(opt);
+});
+
+selMes.addEventListener("change", carregarDados);
+selAno.addEventListener("change", carregarDados);
+
+// ── Carregar dados do Firebase ──────────────────────
+async function carregarDados() {
+  const mes = selMes.value;
+  const ano = selAno.value;
+  const container = document.getElementById("container");
+  container.innerHTML = '<div class="loading">Carregando...</div>';
+
+  let fbData = {};
+  try {
+    const doc = await db.collection(COL).doc(ano + "-" + mes).get();
+    if (doc.exists) fbData = doc.data();
+  } catch(e) { console.warn("Firebase load:", e); }
+
+  container.innerHTML = EMPS.map(function(emp) {
+    const d        = fbData[emp.id] || {};
+    const enviado  = !!d.enviado;
+    const ofensor  = d.principalOfensor || "";
+    const qtd      = d.quantidade       || "";
+    const texto    = d.texto            || "";
+
+    return '<div class="emp-card' + (enviado ? " enviado" : "") + '" id="card-' + emp.id + '">'
+      + '<img src="' + emp.logo + '" class="emp-logo" alt="' + emp.id + '">'
+      + '<div class="ref-box">'
+      +   '<div>'
+      +     '<div class="ref-label">Principal Ofensor</div>'
+      +     '<div class="ref-value' + (!ofensor ? " empty" : "") + '">' + (ofensor || "Aguardando analista...") + '</div>'
+      +   '</div>'
+      +   '<div>'
+      +     '<div class="ref-label">Quantidade de Sinistros</div>'
+      +     '<div class="ref-value' + (!qtd ? " empty" : "") + '">' + (qtd || "Aguardando analista...") + '</div>'
+      +   '</div>'
+      + '</div>'
+      + '<label>Ações do Plano (uma ação por linha)</label>'
+      + '<div class="textarea-wrap">'
+      +   '<textarea id="txt-' + emp.id + '" rows="5"'
+      +   (enviado ? ' disabled' : '')
+      +   ' placeholder="Convocação dos motoristas envolvidos;\nAtuação junto à equipe de instrutores;">'
+      +   texto
+      +   '</textarea>'
+      + '</div>'
+      + (enviado
+          ? '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600">✅ Plano enviado com sucesso.</p>'
+          : '<div class="send-row">'
+          +   '<button class="btn-enviar" onclick="enviar(\'' + emp.id + '\')">Enviar</button>'
+          +   '<span class="send-status" id="status-' + emp.id + '"></span>'
+          +   '</div>'
+        )
+      + '</div>';
+  }).join("");
+}
+
+// ── Enviar plano de uma empresa ─────────────────────
+async function enviar(empId) {
+  const mes    = selMes.value;
+  const ano    = selAno.value;
+  const txt    = document.getElementById("txt-" + empId);
+  const btn    = txt.closest(".emp-card").querySelector(".btn-enviar");
+  const status = document.getElementById("status-" + empId);
+
+  if (!txt.value.trim()) {
+    status.textContent = "⚠️ Preencha ao menos uma ação.";
+    status.className   = "send-status err";
+    return;
+  }
+
+  btn.disabled       = true;
+  btn.textContent    = "Enviando...";
+  status.textContent = "";
+
+  try {
+    const docRef = db.collection(COL).doc(ano + "-" + mes);
+    await docRef.set({ [empId]: { texto: txt.value.trim(), enviado: true, enviadoEm: new Date().toISOString() }}, { merge: true });
+
+    // Bloquear campos
+    txt.disabled = true;
+    btn.closest(".send-row").remove();
+    txt.closest(".emp-card").classList.add("enviado");
+    const wrap = txt.closest(".emp-card");
+    wrap.insertAdjacentHTML("beforeend", '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600">✅ Plano enviado com sucesso.</p>');
+
+  } catch(e) {
+    btn.disabled    = false;
+    btn.textContent = "Enviar";
+    status.textContent = "❌ Erro ao enviar. Tente novamente.";
+    status.className   = "send-status err";
+  }
+}
+
+// ── Iniciar ─────────────────────────────────────────
+carregarDados();
+</script>
+</body>
+</html>

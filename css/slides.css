@@ -1,0 +1,204 @@
+/* ═══════════════════════════════════════════════════
+   slides.css — estilos dos slides da apresentação
+   Layout baseado nos slides do Grupo JCA (16:9)
+═══════════════════════════════════════════════════ */
+
+/* ── Container base ───────────────────────────────── */
+.slide {
+  width: 100%; height: 100%;
+  background: #fff;
+  padding: 12px 18px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+  overflow: hidden;
+  /* Garante espaços entre palavras no html2canvas */
+  word-spacing: 0.12em;
+  font-kerning: none;
+}
+
+/* ════════════════════
+   LOGOS
+════════════════════ */
+
+/* Header: logo pequeno (esquerda) */
+.slide-logo-sm {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Título row: logo grande (direita) — GRUPO=JCA, regionais=mapa da regional
+   ┌─────────────────────────────────────────────────────────────┐
+   │  Para ajustar o TAMANHO do logo regional: edite "height"   │
+   │  abaixo. A largura escala automaticamente (width: auto).   │
+   └─────────────────────────────────────────────────────────────┘ */
+.slide-logo-lg {
+  height: 48px;           /* ← EDITE AQUI para mudar o tamanho */
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-left: 14px;
+  align-self: flex-start;
+}
+
+/* Rodapé: logo IO (direita) */
+.slide-logo-io {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* ════════════════════
+   CAPA
+════════════════════ */
+.slide-cover {
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.slide-cover__logos {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 48px;
+}
+.slide-cover__logo-jca { height: 60px; width: auto; object-fit: contain; }
+.slide-cover__logo-io  { height: 60px; width: auto; object-fit: contain; }
+.slide-cover__sep { width: 1px; height: 60px; background: #ccc; }
+.slide-cover__title  { font-size: 26px; font-weight: 700; color: var(--navy); text-align: center; font-family: Arial, Helvetica, sans-serif; }
+.slide-cover__period { font-size: 22px; color: #555; text-align: center; margin-top: 8px; font-family: Arial, Helvetica, sans-serif; }
+
+/* ════════════════════
+   CABEÇALHO PADRÃO
+════════════════════ */
+.slide-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 3px solid var(--navy);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+/* Linha separadora entre o logo e o breadcrumb */
+.slide-header__sep {
+  flex: 1;
+  height: 1px;
+  background: var(--navy);
+  opacity: .15;   /* ← mais claro; aumente para escurecer, reduza para clarear */
+}
+.slide-header__bc {
+  font-size: 10px;
+  color: #bbb;
+  letter-spacing: 1px;   /* era 4px em caixa alta */
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.slide-header__badge {
+  background: var(--navy);
+  color: #fff;
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* ════════════════════
+   LINHA DE TÍTULO + LOGO GRANDE
+════════════════════ */
+.slide-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+.slide-regional__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--red);
+  line-height: 1.3;
+}
+
+/* ════════════════════
+   CARDS DE KPI
+════════════════════ */
+.kpi-cards {
+  display: grid;
+  /* colunas definidas inline por cada slide (3 ou 4) */
+  gap: 8px;
+  flex-shrink: 0;
+}
+.kpi-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 7px 10px;
+}
+.kpi-card__label { font-size: 9px;  color: var(--red);  font-weight: 600; line-height: 1.2; }
+.kpi-card__value { font-size: 15px; color: var(--navy); font-weight: 700; margin-top: 2px; }
+
+/* ════════════════════
+   ÁREA DO GRÁFICO (Identificados)
+════════════════════ */
+.slide-regional__chart-area {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  min-height: 0;
+}
+.slide-regional__chart { flex: 1; min-width: 0; }
+
+/* ── Meta / Realizado ─────────────────────────────── */
+.slide-meta-real { display: flex; flex-direction: column; gap: 8px; min-width: 90px; }
+.slide-meta-box  { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 7px 10px; }
+.slide-meta-box__label { font-size: 9px;  color: var(--muted); }
+.slide-meta-box__val   { font-size: 16px; font-weight: 700; }
+.slide-meta-box__val--navy { color: var(--navy); }
+.slide-meta-box__val--red  { color: var(--red);  }
+
+/* ════════════════════
+   ÁREA DO GRÁFICO (Não Identificados — largura total)
+════════════════════ */
+.slide-nao-id__chart {
+  flex: 1;
+  margin-top: 8px;
+  min-height: 0;
+}
+
+/* ════════════════════
+   RODAPÉ
+════════════════════ */
+.slide__footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+.slide__footer-text { font-size: 9px; color: var(--muted-light); }
+
+/* ════════════════════
+   PLANO DE AÇÃO
+════════════════════ */
+.slide-plano__title { font-size: 14px; font-weight: 700; color: var(--red); margin-bottom: 10px; flex-shrink: 0; }
+
+.slide-plano__table { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 8px; flex-shrink: 0; }
+.slide-plano__table-hd   { background: #bbb; padding: 5px 14px; text-align: center; font-weight: 700; font-size: 11px; }
+.slide-plano__table-type { padding: 5px 14px; text-align: center; font-size: 11px; border-bottom: 1px solid var(--border); }
+.slide-plano__table-row  { display: flex; border-bottom: 1px solid var(--border); }
+.slide-plano__table-cell { flex: 1; padding: 5px 10px; text-align: center; font-size: 11px; border-right: 1px solid var(--border); }
+.slide-plano__table-cell:last-child { border-right: none; }
+.slide-plano__table-sub  { padding: 4px 14px; text-align: center; background: #eee; font-weight: 700; font-size: 10px; }
+
+.slide-plano__actions { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; flex: 1; overflow: hidden; }
+.slide-plano__actions ul { margin: 0; padding-left: 18px; }
+.slide-plano__actions li { font-size: 12px; color: var(--navy); margin-bottom: 6px; }
+.slide-plano__empty { color: var(--muted-light); font-style: italic; font-size: 11px; }
