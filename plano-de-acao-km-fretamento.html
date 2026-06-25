@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dln0ctawv/image/upload/v1781288131/Intelig%C3%AAncia_branco_m524fk_pmmcig.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JCA — Plano de Ação · KM Fretamento</title>
+  <style>
+    :root { --navy:#1d3061; --red:#c0392b; --border:#e0e0e0; --bg:#f5f6fa; --muted:#888; }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,sans-serif; background:var(--bg); color:#333; }
+
+    .header { background:var(--navy); padding:14px 24px; display:flex; align-items:center; gap:16px; }
+    .header img { height:32px; }
+    .header__title { color:white; font-weight:700; font-size:15px; }
+    .header__right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .header label  { color:rgba(255,255,255,.7); font-size:11px; margin:0; }
+    .header select { padding:5px 10px; border-radius:6px; border:none; font-size:13px; }
+
+    .container { max-width:860px; margin:28px auto; padding:0 16px 60px; }
+
+    .emp-card { background:white; border-radius:12px; padding:22px;
+                margin-bottom:18px; box-shadow:0 1px 6px rgba(0,0,0,.06); }
+
+    .emp-logo { height:40px; object-fit:contain; margin-bottom:14px; display:block; }
+
+    label.field-label { display:block; font-size:10px; font-weight:700; color:var(--muted);
+            text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+    textarea { width:100%; padding:10px 12px; border:1.5px solid var(--border);
+               border-radius:8px; font-size:13px; font-family:inherit;
+               color:var(--navy); resize:vertical; outline:none; line-height:1.6; }
+    textarea:focus { border-color:var(--navy); }
+    textarea:disabled { background:#f5f5f5; color:#999; cursor:not-allowed; }
+
+    .send-row { display:flex; align-items:center; gap:12px; margin-top:14px; }
+    .btn-enviar { padding:10px 28px; border-radius:8px; border:none;
+                  font-size:13px; font-family:inherit; cursor:pointer;
+                  font-weight:700; background:var(--navy); color:white; }
+    .btn-enviar:hover  { opacity:.88; }
+    .btn-enviar:disabled { background:#aaa; cursor:not-allowed; }
+    .send-status { font-size:12px; font-weight:600; }
+    .send-status.ok  { color:#1a7a3c; }
+    .send-status.err { color:var(--red); }
+
+    .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
+    footer   { text-align:center; color:var(--muted); font-size:11px; margin-top:32px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <img src="https://res.cloudinary.com/dln0ctawv/image/upload/v1779238658/JCA_1_mp1ic7.png" alt="JCA">
+  <span class="header__title">Plano de Ação — KM Fretamento</span>
+  <div class="header__right">
+    <label>MÊS</label>
+    <select id="sel-mes"></select>
+    <label>ANO</label>
+    <select id="sel-ano"></select>
+  </div>
+</div>
+
+<div class="container" id="container">
+  <div class="loading">Carregando dados...</div>
+</div>
+
+<footer>JCA — Inteligência Operacional · Plano de Ação · KM Fretamento</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script>
+// ── Firebase ─────────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey:            "AIzaSyBoAgfudElHnMLPF9i9aplwc2sd9-zmT3E",
+  authDomain:        "apresentacoes-indicadores.firebaseapp.com",
+  projectId:         "apresentacoes-indicadores",
+  storageBucket:     "apresentacoes-indicadores.firebasestorage.app",
+  messagingSenderId: "508186104156",
+  appId:             "1:508186104156:web:a52ab3848db24c7555b199"
+});
+var db = firebase.firestore();
+var COL_PLANOS = "planos_km_fretamento";
+var COL_DADOS  = "km_fretamento";
+
+// ── EmailJS ───────────────────────────────────────────────────
+var EMAILJS_SERVICE_ID  = "service_0kojgve";
+var EMAILJS_TEMPLATE_ID = "template_ddaj648";
+var EMAILJS_PUBLIC_KEY  = "9rWOQnvMgz5XPEP1v";
+var EMAIL_DESTINO       = "inteligenciaoperacional@viacaocometa.com.br";
+
+var EMPRESA_NOME = {
+  "1001": "Auto Viação 1001",
+  "cat":  "Auto Viação Catarinense",
+  "com":  "Viação Cometa",
+  "opc":  "Opção"
+};
+
+var MESES_FULL  = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+var MESES_ABREV = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+
+var EMPS = [
+  { id:"1001", logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671790/1001_qisjtr_1_pzpzqw.png" },
+  { id:"cat",  logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671813/AVC_zk4pe9_k4jgau.png" },
+  { id:"com",  logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671826/COM_folzln_ddghpr.png" },
+  { id:"opc",  logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1781452705/Op%C3%A7%C3%A3o_ztgpnc_fq3ibu.png" },
+];
+
+// ── Seletores de período (padrão: mês anterior) ───────────────
+var now       = new Date();
+var mesPadrao = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+var anoPadrao = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+
+var selMes = document.getElementById("sel-mes");
+var selAno = document.getElementById("sel-ano");
+
+MESES_FULL.forEach(function(nome, i) {
+  var opt = document.createElement("option");
+  opt.value = i; opt.textContent = nome;
+  if (i === mesPadrao) opt.selected = true;
+  selMes.appendChild(opt);
+});
+[now.getFullYear() - 1, now.getFullYear()].forEach(function(a) {
+  var opt = document.createElement("option");
+  opt.value = a; opt.textContent = a;
+  if (a === anoPadrao) opt.selected = true;
+  selAno.appendChild(opt);
+});
+
+selMes.addEventListener("change", carregarDados);
+selAno.addEventListener("change", carregarDados);
+
+// ── Doc ID: ano-mm (ex: 2026-05) ─────────────────────────────
+function docId() {
+  var mesIdx = parseInt(selMes.value);
+  var ano    = selAno.value;
+  var mesNum = mesIdx + 1;
+  return ano + "-" + (mesNum < 10 ? "0" + mesNum : mesNum);
+}
+
+// ── Carregar dados ────────────────────────────────────────────
+function carregarDados() {
+  var mesIdx   = parseInt(selMes.value);
+  var ano      = selAno.value;
+  var mesAbrev = MESES_ABREV[mesIdx];
+  var mesLabel = mesAbrev + "/" + ano;
+  document.getElementById("container").innerHTML = '<div class="loading">Carregando...</div>';
+
+  Promise.all([
+    db.collection(COL_PLANOS).doc(docId()).get().catch(function() { return null; }),
+    db.collection(COL_DADOS).doc(docId()).get().catch(function() { return null; })
+  ]).then(function(results) {
+    var planosSnap = results[0];
+    var dadosSnap  = results[1];
+    var planosEmp  = (planosSnap && planosSnap.exists) ? (planosSnap.data() || {}) : {};
+    var dadosMes   = (dadosSnap  && dadosSnap.exists)  ? (dadosSnap.data()  || {}) : {};
+    var dados      = dadosMes.dados || {};
+
+    var html = EMPS.map(function(emp) {
+      var p       = planosEmp[emp.id] || {};
+      var enviado = !!p.enviado;
+      var texto   = p.texto || p.resposta || "";
+      var d       = dados[emp.id] || {};
+
+      var kmProd   = parseFloat(d.kmProdMes   || 0);
+      var kmImprod = parseFloat(d.kmImprodMes || 0);
+      var kmTotal  = kmProd + kmImprod;
+      var percImp  = kmTotal > 0 ? (kmImprod / kmTotal * 100).toFixed(1) : null;
+      var percCor  = percImp && parseFloat(percImp) > 10 ? "#c0392b" : "#1a7a3c";
+      function fmtN(v) { return v > 0 ? v.toLocaleString("pt-BR") : "—"; }
+
+      var kpisHTML = kmTotal > 0
+        ? '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">'
+          + kpiBox("KM Produtivo",   fmtN(kmProd),   "#1d3061")
+          + kpiBox("KM Improdutivo", fmtN(kmImprod), "#c0392b")
+          + kpiBox("% Improdutiva",  percImp ? percImp + "%" : "—", percCor)
+          + "</div>"
+        : '<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 14px;font-size:12px;color:#856404;margin-bottom:12px">'
+          + "⏳ Dados do mês ainda não importados pelo analista."
+          + "</div>";
+
+      var contratos = (d.contratos || []).filter(function(c) { return c.nome && c.pctAtual && (parseFloat(c.pctAtual)||0) > (parseFloat(c.pctAnterior)||0); });
+      contratos = contratos.slice().sort(function(a, b) {
+        return (parseFloat(b.pctAtual) || 0) - (parseFloat(a.pctAtual) || 0);
+      });
+      var contratosHTML = "";
+      if (contratos.length > 0) {
+        var rows = contratos.map(function(c, i) {
+          var pct = parseFloat(c.pctAtual) || 0, pctA = parseFloat(c.pctAnterior) || 0;
+          var cor = pct > pctA ? "#c0392b" : pct < pctA ? "#1a7a3c" : "#555";
+          var bg  = i % 2 === 0 ? "#f8f9fc" : "#fff";
+          return "<tr style='background:" + bg + "'>"
+            + "<td style='padding:7px 12px;font-size:12px;font-weight:600;color:#1d3061'>" + c.nome + "</td>"
+            + "<td style='padding:7px 10px;text-align:center;font-size:12px;color:#888'>" + (c.pctAnterior || "—") + "</td>"
+            + "<td style='padding:7px 10px;text-align:center;font-size:12px;font-weight:700;color:" + cor + "'>" + (c.pctAtual || "—") + "</td>"
+            + "</tr>";
+        }).join("");
+        contratosHTML = '<div style="margin-bottom:14px">'
+          + '<div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Contratos — ' + mesLabel + "</div>"
+          + '<div style="border-radius:8px;overflow:hidden;border:1px solid #e8ecf5">'
+          + '<table style="width:100%;border-collapse:collapse">'
+          + '<thead><tr style="background:#1d3061">'
+          +   '<th style="padding:7px 12px;text-align:left;color:#fff;font-size:10px">Contrato</th>'
+          +   '<th style="padding:7px 10px;text-align:center;color:#fff;font-size:10px;width:80px">Mês Ant.</th>'
+          +   '<th style="padding:7px 10px;text-align:center;color:#fff;font-size:10px;width:80px">' + mesAbrev + "</th>"
+          + "</tr></thead><tbody>" + rows + "</tbody></table></div></div>";
+      }
+
+      return '<div class="emp-card" id="card-' + emp.id + '">'
+        + '<img src="' + emp.logo + '" class="emp-logo" alt="' + emp.id + '">'
+        + kpisHTML
+        + contratosHTML
+        + '<label class="field-label">Plano de Ação — ' + mesLabel + "</label>"
+        + '<textarea id="txt-' + emp.id + '" rows="5"'
+        + (enviado ? " disabled" : "")
+        + ' placeholder="Ação 1;\nAção 2;\nAção 3;">'
+        + texto
+        + "</textarea>"
+        + (enviado
+            ? '<p style="color:#1a7a3c;font-size:12px;margin-top:10px;font-weight:600">✅ Plano enviado com sucesso.</p>'
+            : '<div class="send-row">'
+            +   '<button class="btn-enviar" onclick="enviar(\'' + emp.id + '\')">Enviar</button>'
+            +   '<span class="send-status" id="status-' + emp.id + '"></span>'
+            + "</div>"
+          )
+        + "</div>";
+    }).join("");
+
+    document.getElementById("container").innerHTML = html;
+  });
+}
+
+function kpiBox(label, value, cor) {
+  return '<div style="border:1px solid #e8ecf5;border-radius:8px;padding:10px 14px">'
+    + '<div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">' + label + "</div>"
+    + '<div style="font-size:18px;font-weight:700;color:' + cor + '">' + value + "</div>"
+    + "</div>";
+}
+// ── Enviar plano ──────────────────────────────────────────────
+function enviar(empId) {
+  var txt    = document.getElementById("txt-" + empId);
+  var card   = txt.closest(".emp-card");
+  var btn    = card.querySelector(".btn-enviar");
+  var status = document.getElementById("status-" + empId);
+
+  if (!txt.value.trim()) {
+    status.textContent = "⚠️ Preencha ao menos uma ação.";
+    status.className   = "send-status err";
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = "Enviando...";
+  status.textContent = "";
+
+  var update = {};
+  update[empId + ".texto"]     = txt.value.trim();
+  update[empId + ".resposta"]  = txt.value.trim();
+  update[empId + ".enviado"]   = true;
+  update[empId + ".enviadoEm"] = new Date().toISOString();
+
+  db.collection(COL_PLANOS).doc(docId()).set(update, { merge: true })
+    .then(function() {
+      txt.disabled = true;
+      var row = card.querySelector(".send-row");
+      if (row) row.remove();
+      card.insertAdjacentHTML("beforeend",
+        '<p style="color:#1a7a3c;font-size:12px;margin-top:10px;font-weight:600">✅ Plano enviado com sucesso.</p>');
+      _enviarEmail(empId);
+    })
+    .catch(function(e) {
+      btn.disabled = false; btn.textContent = "Enviar";
+      status.textContent = "❌ Erro: " + e.message;
+      status.className = "send-status err";
+    });
+}
+
+// ── Email ─────────────────────────────────────────────────────
+function _enviarEmail(empId) {
+  var mesIdx  = parseInt(selMes.value);
+  var ano     = selAno.value;
+  var empresa = EMPRESA_NOME[empId] || empId;
+  var mesNome = MESES_FULL[mesIdx];
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email: EMAIL_DESTINO,
+    empresa:  empresa,
+    mes:      mesNome + " de " + ano,
+    mensagem: "Prezados,\nPlano de ação de KM Fretamento da " + empresa
+              + ", referente ao mês de " + mesNome + " de " + ano + ", foi preenchido."
+  }).then(function() {
+    console.log("[EmailJS] KM Fretamento email enviado");
+  }).catch(function(err) {
+    console.warn("[EmailJS] Erro:", err);
+  });
+}
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+carregarDados();
+</script>
+</body>
+</html>

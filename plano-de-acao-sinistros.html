@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="https://res.cloudinary.com/dln0ctawv/image/upload/v1781288131/Intelig%C3%AAncia_branco_m524fk_pmmcig.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JCA — Plano de Ação · Excessos de Velocidade</title>
+  <title>JCA — Plano de Ação · Sinistros</title>
   <style>
     :root { --navy:#1d3061; --red:#c0392b; --border:#e0e0e0; --bg:#f5f6fa; --muted:#888; }
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
@@ -18,19 +18,24 @@
 
     .container { max-width:860px; margin:28px auto; padding:0 16px 60px; }
 
-    .reg-card { background:white; border-radius:12px; padding:22px;
+    .emp-card { background:white; border-radius:12px; padding:22px;
                 margin-bottom:18px; box-shadow:0 1px 6px rgba(0,0,0,.06); }
-    .reg-card.enviado { opacity:.7; pointer-events:none; }
+    .emp-card.enviado { opacity:.7; pointer-events:none; }
+    .emp-card.enviado .textarea-wrap { position:relative; }
+    .emp-card.enviado .textarea-wrap::after {
+      content:"✅ Enviado";
+      position:absolute; top:8px; right:12px;
+      background:#e6f9ed; color:#1a7a3c;
+      font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px;
+    }
 
-    .reg-card__title { font-size:14px; font-weight:700; color:var(--navy);
-                       border-bottom:2px solid var(--navy); padding-bottom:8px; margin-bottom:16px; }
+    .emp-logo { height:40px; object-fit:contain; margin-bottom:14px; display:block; }
 
     .ref-box { background:#f0f4ff; border-radius:8px; padding:12px 16px;
                display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-    .ref-row2 { grid-template-columns:1fr 1fr 1fr 1fr; }
     .ref-label { font-size:10px; font-weight:700; color:var(--muted);
                  text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
-    .ref-value { font-size:15px; font-weight:700; color:var(--navy); min-height:20px; }
+    .ref-value { font-size:16px; font-weight:700; color:var(--navy); min-height:22px; }
     .ref-value.empty { color:#ccc; font-style:italic; font-weight:400; font-size:13px; }
 
     label { display:block; font-size:10px; font-weight:700; color:var(--muted);
@@ -52,6 +57,7 @@
     .send-status.err { color:var(--red); }
 
     .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
+
     footer { text-align:center; color:var(--muted); font-size:11px; margin-top:32px; }
   </style>
 </head>
@@ -59,7 +65,7 @@
 
 <div class="header">
   <img src="https://res.cloudinary.com/dln0ctawv/image/upload/v1779238658/JCA_1_mp1ic7.png" alt="JCA">
-  <span class="header__title">Plano de Ação — Excessos de Velocidade</span>
+  <span class="header__title">Plano de Ação — Sinistros</span>
   <div class="header__right">
     <label style="color:rgba(255,255,255,.7);font-size:11px;margin:0">MÊS</label>
     <select id="sel-mes"></select>
@@ -69,16 +75,19 @@
 </div>
 
 <div class="container" id="container">
-  <div class="loading">Carregando dados...</div>
+  <div class="loading" id="loading">Carregando dados...</div>
 </div>
 
-<footer>JCA — Inteligência Operacional · Plano de Ação · Excessos de Velocidade</footer>
+<footer>JCA — Inteligência Operacional · Plano de Ação · Sinistros</footer>
 
+<!-- Firebase -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
 <script>
-firebase.initializeApp({
+// ── Firebase config ─────────────────────────────────
+const fbApp = firebase.initializeApp({
   apiKey:            "AIzaSyBoAgfudElHnMLPF9i9aplwc2sd9-zmT3E",
   authDomain:        "apresentacoes-indicadores.firebaseapp.com",
   projectId:         "apresentacoes-indicadores",
@@ -87,21 +96,25 @@ firebase.initializeApp({
   appId:             "1:508186104156:web:a52ab3848db24c7555b199"
 });
 const db  = firebase.firestore();
-const COL = "planos_excessos";
+const COL = "planos_sinistros";
 
 // ── EmailJS ──────────────────────────────────────────
-const EMAILJS_SERVICE_ID  = 'service_0kojgve';
-const EMAILJS_TEMPLATE_ID = 'template_ddaj648';
-const EMAILJS_PUBLIC_KEY  = '9rWOQnvMgz5XPEP1v';
-const EMAIL_DESTINO       = 'inteligenciaoperacional@viacaocometa.com.br';
-const MESES_FULL = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-const REGIONAL_NOME = { RIO: 'Regional Rio', SUL: 'Regional Sul', SAO: 'Regional São Paulo' };
+var EMAILJS_SERVICE_ID  = 'service_0kojgve';
+var EMAILJS_TEMPLATE_ID = 'template_ddaj648';
+var EMAILJS_PUBLIC_KEY  = '9rWOQnvMgz5XPEP1v';
+var EMAIL_DESTINO       = 'inteligenciaoperacional@viacaocometa.com.br';
+
+var EMPRESA_NOME_SIN = {
+  '1001':        'Auto Viação 1001',
+  'catarinense': 'Auto Viação Catarinense',
+  'cometa':      'Viação Cometa'
+};
 
 const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-const REGS  = [
-  { id:"RIO", label:"Regional RIO" },
-  { id:"SUL", label:"Regional SUL" },
-  { id:"SAO", label:"Regional SAO" }
+const EMPS  = [
+  { id:"1001",        logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671790/1001_qisjtr_1_pzpzqw.png" },
+  { id:"catarinense", logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671813/AVC_zk4pe9_k4jgau.png" },
+  { id:"cometa",      logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671826/COM_folzln_ddghpr.png" }
 ];
 
 // ── Seletores de período ────────────────────────────
@@ -127,7 +140,8 @@ selAno.addEventListener("change", carregarDados);
 
 // ── Carregar dados do Firebase ──────────────────────
 async function carregarDados() {
-  const mes = selMes.value, ano = selAno.value;
+  const mes = selMes.value;
+  const ano = selAno.value;
   const container = document.getElementById("container");
   container.innerHTML = '<div class="loading">Carregando...</div>';
 
@@ -137,52 +151,51 @@ async function carregarDados() {
     if (doc.exists) fbData = doc.data();
   } catch(e) { console.warn("Firebase load:", e); }
 
-  container.innerHTML = REGS.map(function(reg) {
-    const d       = fbData[reg.id] || {};
-    const enviado = !!d.enviado;
+  container.innerHTML = EMPS.map(function(emp) {
+    const d        = fbData[emp.id] || {};
+    const enviado  = !!d.enviado;
+    const ofensor  = d.principalOfensor || "";
+    const qtd      = d.quantidade       || "";
+    const texto    = d.texto            || "";
 
-    function refVal(val, label) {
-      const empty = !val;
-      return '<div>'
-        + '<div class="ref-label">' + label + '</div>'
-        + '<div class="ref-value' + (empty ? ' empty' : '') + '">' + (val || 'Aguardando analista...') + '</div>'
-        + '</div>';
-    }
-
-    return '<div class="reg-card' + (enviado ? ' enviado' : '') + '" id="card-' + reg.id + '">'
-      + '<div class="reg-card__title">' + reg.label + '</div>'
-      + '<div class="ref-box" style="grid-template-columns:1fr 1fr 1fr 1fr">'
-      +   refVal(d.qtdExcessos, 'Qtd. Excessos do Mês')
-      +   refVal(d.a1000km,     'Excessos a cada 1000km')
-      +   refVal(d.setorNI,     'Principal Setor (NI)')
-      +   refVal(d.qtdNI,       'Qtd. Excessos NI')
+    return '<div class="emp-card' + (enviado ? " enviado" : "") + '" id="card-' + emp.id + '">'
+      + '<img src="' + emp.logo + '" class="emp-logo" alt="' + emp.id + '">'
+      + '<div class="ref-box">'
+      +   '<div>'
+      +     '<div class="ref-label">Principal Ofensor</div>'
+      +     '<div class="ref-value' + (!ofensor ? " empty" : "") + '">' + (ofensor || "Aguardando analista...") + '</div>'
+      +   '</div>'
+      +   '<div>'
+      +     '<div class="ref-label">Quantidade de Sinistros</div>'
+      +     '<div class="ref-value' + (!qtd ? " empty" : "") + '">' + (qtd || "Aguardando analista...") + '</div>'
+      +   '</div>'
       + '</div>'
       + '<label>Ações do Plano (uma ação por linha)</label>'
       + '<div class="textarea-wrap">'
-      +   '<textarea id="txt-' + reg.id + '" rows="5"'
+      +   '<textarea id="txt-' + emp.id + '" rows="5"'
       +   (enviado ? ' disabled' : '')
-      +   ' placeholder="Convocação dos motoristas infratores;\nAtuação junto à equipe de instrutores;\nDivulgação das linhas de maior reincidência;">'
-      +   (d.texto || '')
+      +   ' placeholder="Convocação dos motoristas envolvidos;\nAtuação junto à equipe de instrutores;">'
+      +   texto
       +   '</textarea>'
       + '</div>'
       + (enviado
           ? '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600">✅ Plano enviado com sucesso.</p>'
           : '<div class="send-row">'
-          +   '<button class="btn-enviar" onclick="enviar(\'' + reg.id + '\')">Enviar</button>'
-          +   '<span class="send-status" id="status-' + reg.id + '"></span>'
+          +   '<button class="btn-enviar" onclick="enviar(\'' + emp.id + '\')">Enviar</button>'
+          +   '<span class="send-status" id="status-' + emp.id + '"></span>'
           +   '</div>'
         )
       + '</div>';
   }).join("");
 }
 
-// ── Enviar plano de uma regional ────────────────────
-async function enviar(regId) {
-  const mes = selMes.value, ano = selAno.value;
-  const txt    = document.getElementById("txt-" + regId);
-  const card   = txt.closest(".reg-card");
-  const btn    = card.querySelector(".btn-enviar");
-  const status = document.getElementById("status-" + regId);
+// ── Enviar plano de uma empresa ─────────────────────
+async function enviar(empId) {
+  const mes    = selMes.value;
+  const ano    = selAno.value;
+  const txt    = document.getElementById("txt-" + empId);
+  const btn    = txt.closest(".emp-card").querySelector(".btn-enviar");
+  const status = document.getElementById("status-" + empId);
 
   if (!txt.value.trim()) {
     status.textContent = "⚠️ Preencha ao menos uma ação.";
@@ -190,41 +203,44 @@ async function enviar(regId) {
     return;
   }
 
-  btn.disabled = true; btn.textContent = "Enviando...";
+  btn.disabled       = true;
+  btn.textContent    = "Enviando...";
+  status.textContent = "";
 
   try {
-    await db.collection(COL).doc(ano + "-" + mes).set(
-      { [regId]: { texto: txt.value.trim(), enviado: true, enviadoEm: new Date().toISOString() }},
-      { merge: true }
-    );
+    const docRef = db.collection(COL).doc(ano + "-" + mes);
+    await docRef.set({ [empId]: { texto: txt.value.trim(), enviado: true, enviadoEm: new Date().toISOString() }}, { merge: true });
+
+    // Bloquear campos
     txt.disabled = true;
-    card.querySelector(".send-row").remove();
-    card.classList.add("enviado");
-    card.insertAdjacentHTML("beforeend", '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600">✅ Plano enviado com sucesso.</p>');
-    _enviarEmailExcessos(regId, mes, ano);
+    btn.closest(".send-row").remove();
+    txt.closest(".emp-card").classList.add("enviado");
+    const wrap = txt.closest(".emp-card");
+    wrap.insertAdjacentHTML("beforeend", '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600">✅ Plano enviado com sucesso.</p>');
+    _enviarEmailSinistros(empId, selMes.value, selAno.value);
+
   } catch(e) {
-    btn.disabled = false; btn.textContent = "Enviar";
+    btn.disabled    = false;
+    btn.textContent = "Enviar";
     status.textContent = "❌ Erro ao enviar. Tente novamente.";
-    status.className = "send-status err";
+    status.className   = "send-status err";
   }
 }
 
-// Inicializa EmailJS
+// ── Iniciar ─────────────────────────────────────────
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
-function _enviarEmailExcessos(regId, mes, ano) {
-  var mesIdx  = MESES.indexOf(mes);
-  var mesNome = mesIdx >= 0 ? MESES_FULL[mesIdx] : mes;
-  var regNome = REGIONAL_NOME[regId] || regId;
+function _enviarEmailSinistros(empId, mes, ano) {
+  var empresa = EMPRESA_NOME_SIN[empId] || empId;
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
     to_email: EMAIL_DESTINO,
-    empresa:  regNome,
-    mes:      mesNome + ' de ' + ano,
-    mensagem: 'Prezados,\nPlano de ação de Excessos de Velocidade da '
-              + regNome + ', referente ao mês de ' + mesNome + ' de ' + ano
+    empresa:  empresa,
+    mes:      mes + ' de ' + ano,
+    mensagem: 'Prezados, boa tarde.\n\nPlano de ação de Sinistros da ' + empresa
+              + ', referente ao mês de ' + mes + ' de ' + ano
               + ', foi preenchido.'
   }).then(function() {
-    console.log('[EmailJS] Email excessos enviado');
+    console.log('[EmailJS] Email sinistros enviado');
   }).catch(function(err) {
     console.warn('[EmailJS] Erro:', err);
   });
