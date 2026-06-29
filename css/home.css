@@ -1,0 +1,70 @@
+/* ── Tela inicial ─────────────────────────────────── */
+.home {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #f0f2f8 0%, #fff 100%);
+}
+.home__header { text-align: center; margin-bottom: 36px; }
+.home__eyebrow {
+  font-size: 10px; letter-spacing: 5px; color: #aaa;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.home__title    { font-size: 30px; font-weight: 700; color: var(--navy); }
+.home__subtitle { color: var(--muted); margin-top: 8px; font-size: 13px; }
+
+/* ── Botões de categoria ──────────────────────────── */
+.home__cat-btns {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 36px;
+}
+.home__cat-btn {
+  padding: 10px 28px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  border: 2px solid var(--navy);
+  background: #fff;
+  color: var(--navy);
+  transition: all .2s;
+  letter-spacing: .3px;
+}
+.home__cat-btn:hover,
+.home__cat-btn--active {
+  background: var(--navy);
+  color: #fff;
+}
+
+/* ── Grid de cards ────────────────────────────────── */
+.home__cards    { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+
+/* ── Cartão de seleção ────────────────────────────── */
+.home-card {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 30px 38px;
+  width: 210px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.home-card--enabled { cursor: pointer; }
+.home-card--enabled:hover {
+  border-color: var(--navy);
+  box-shadow: 0 6px 20px rgba(0,0,0,.1);
+  transform: translateY(-3px);
+}
+.home-card--disabled { opacity: .45; cursor: default; }
+
+
+
+.home-card__icon  { font-size: 34px; margin-bottom: 12px; }
+.home-card__label { font-size: 15px; font-weight: 700; color: var(--navy); }
+.home-card__desc  { font-size: 12px; color: #999; margin-top: 6px; }

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dln0ctawv/image/upload/v1781288131/Intelig%C3%AAncia_branco_m524fk_pmmcig.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JCA — Plano de Ação · Excessos de Velocidade</title>
+  <style>
+    :root { --navy:#1d3061; --red:#c0392b; --border:#e0e0e0; --bg:#f5f6fa; --muted:#888; }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,sans-serif; background:var(--bg); color:#333; }
+
+    .header { background:var(--navy); padding:14px 24px; display:flex; align-items:center; gap:16px; }
+    .header img { height:32px; }
+    .header__title { color:white; font-weight:700; font-size:15px; }
+    .header__right  { margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .header select  { padding:5px 10px; border-radius:6px; border:none; font-size:13px; }
+
+    .container { max-width:860px; margin:28px auto; padding:0 16px 60px; }
+
+    .reg-card { background:white; border-radius:12px; padding:22px;
+                margin-bottom:18px; box-shadow:0 1px 6px rgba(0,0,0,.06); }
+    .reg-card.enviado { opacity:.7; pointer-events:none; }
+
+    .reg-card__title { font-size:14px; font-weight:700; color:var(--navy);
+                       border-bottom:2px solid var(--navy); padding-bottom:8px; margin-bottom:16px; }
+
+    .ref-box { background:#f0f4ff; border-radius:8px; padding:12px 16px;
+               display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+    .ref-row2 { grid-template-columns:1fr 1fr 1fr 1fr; }
+    .ref-label { font-size:10px; font-weight:700; color:var(--muted);
+                 text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+    .ref-value { font-size:15px; font-weight:700; color:var(--navy); min-height:20px; }
+    .ref-value.empty { color:#ccc; font-style:italic; font-weight:400; font-size:13px; }
+
+    label { display:block; font-size:10px; font-weight:700; color:var(--muted);
+            text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+    textarea { width:100%; padding:10px 12px; border:1px solid var(--border);
+               border-radius:8px; font-size:13px; font-family:inherit;
+               color:var(--navy); resize:vertical; outline:none; line-height:1.6; }
+    textarea:focus { border-color:var(--navy); }
+    textarea:disabled { background:#f5f5f5; color:#999; cursor:not-allowed; }
+
+    .send-row { display:flex; align-items:center; gap:12px; margin-top:14px; }
+    .btn-enviar { padding:10px 28px; border-radius:8px; border:none;
+                  font-size:13px; font-family:inherit; cursor:pointer;
+                  font-weight:700; background:var(--navy); color:white; }
+    .btn-enviar:hover { opacity:.88; }
+    .btn-enviar:disabled { background:#aaa; cursor:not-allowed; }
+    .send-status { font-size:12px; font-weight:600; }
+    .send-status.ok  { color:#1a7a3c; }
+    .send-status.err { color:var(--red); }
+
+    .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
+    footer { text-align:center; color:var(--muted); font-size:11px; margin-top:32px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <img src="https://res.cloudinary.com/dln0ctawv/image/upload/v1779238658/JCA_1_mp1ic7.png" alt="JCA">
+  <span class="header__title">Plano de Ação — Excessos de Velocidade</span>
+  <div class="header__right">
+    <label style="color:rgba(255,255,255,.7);font-size:11px;margin:0">MÊS</label>
+    <select id="sel-mes"></select>
+    <label style="color:rgba(255,255,255,.7);font-size:11px;margin:0">ANO</label>
+    <select id="sel-ano"></select>
+  </div>
+</div>
+
+<div class="container" id="container">
+  <div class="loading">Carregando dados...</div>
+</div>
+
+<footer>JCA — Inteligência Operacional · Plano de Ação · Excessos de Velocidade</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:            "AIzaSyBoAgfudElHnMLPF9i9aplwc2sd9-zmT3E",
+  authDomain:        "apresentacoes-indicadores.firebaseapp.com",
+  projectId:         "apresentacoes-indicadores",
+  storageBucket:     "apresentacoes-indicadores.firebasestorage.app",
+  messagingSenderId: "508186104156",
+  appId:             "1:508186104156:web:a52ab3848db24c7555b199"
+});
+const db  = firebase.firestore();
+const COL = "planos_excessos";
+
+// ── EmailJS ──────────────────────────────────────────
+const EMAILJS_SERVICE_ID  = 'service_0kojgve';
+const EMAILJS_TEMPLATE_ID = 'template_ddaj648';
+const EMAILJS_PUBLIC_KEY  = '9rWOQnvMgz5XPEP1v';
+const EMAIL_DESTINO       = 'inteligenciaoperacional@viacaocometa.com.br';
+const MESES_FULL = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const REGIONAL_NOME = { RIO: 'Regional Rio', SUL: 'Regional Sul', SAO: 'Regional São Paulo' };
+
+const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const REGS  = [
+  { id:"RIO", label:"Regional RIO" },
+  { id:"SUL", label:"Regional SUL" },
+  { id:"SAO", label:"Regional SAO" }
+];
+
+// ── Seletores de período ────────────────────────────
+const now = new Date();
+const selMes = document.getElementById("sel-mes");
+const selAno = document.getElementById("sel-ano");
+
+MESES.forEach(function(m, i) {
+  const opt = document.createElement("option");
+  opt.value = m; opt.textContent = m;
+  if (i === (now.getMonth() + 11) % 12) opt.selected = true;
+  selMes.appendChild(opt);
+});
+[now.getFullYear() - 1, now.getFullYear()].forEach(function(a) {
+  const opt = document.createElement("option");
+  opt.value = a; opt.textContent = a;
+  if (a === now.getFullYear()) opt.selected = true;
+  selAno.appendChild(opt);
+});
+
+selMes.addEventListener("change", carregarDados);
+selAno.addEventListener("change", carregarDados);
+
+// ── Carregar dados do Firebase ──────────────────────
+async function carregarDados() {
+  const mes = selMes.value, ano = selAno.value;
+  const container = document.getElementById("container");
+  container.innerHTML = '<div class="loading">Carregando...</div>';
+
+  let fbData = {};
+  try {
+    const doc = await db.collection(COL).doc(ano + "-" + mes).get();
+    if (doc.exists) fbData = doc.data();
+  } catch(e) { console.warn("Firebase load:", e); }
+
+  container.innerHTML = REGS.map(function(reg) {
+    const d       = fbData[reg.id] || {};
+    const enviado = !!d.enviado;
+
+    function refVal(val, label) {
+      const empty = !val;
+      return '<div>'
+        + '<div class="ref-label">' + label + '</div>'
+        + '<div class="ref-value' + (empty ? ' empty' : '') + '">' + (val || 'Aguardando analista...') + '</div>'
+        + '</div>';
+    }
+
+    return '<div class="reg-card' + (enviado ? ' enviado' : '') + '" id="card-' + reg.id + '">'
+      + '<div class="reg-card__title">' + reg.label + '</div>'
+      + '<div class="ref-box" style="grid-template-columns:1fr 1fr 1fr 1fr">'
+      +   refVal(d.qtdExcessos, 'Qtd. Excessos do Mês')
+      +   refVal(d.a1000km,     'Excessos a cada 1000km')
+      +   refVal(d.setorNI,     'Principal Setor (NI)')
+      +   refVal(d.qtdNI,       'Qtd. Excessos NI')
+      + '</div>'
+      + '<label>Ações do Plano (uma ação por linha)</label>'
+      + '<div class="textarea-wrap">'
+      +   '<textarea id="txt-' + reg.id + '" rows="5"'
+      +   (enviado ? ' disabled' : '')
+      +   ' placeholder="Convocação dos motoristas infratores;\nAtuação junto à equipe de instrutores;\nDivulgação das linhas de maior reincidência;">'
+      +   (d.texto || '')
+      +   '</textarea>'
+      + '</div>'
+      + (enviado
+          ? '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600">✅ Plano enviado com sucesso.</p>'
+          : '<div class="send-row">'
+          +   '<button class="btn-enviar" onclick="enviar(\'' + reg.id + '\')">Enviar</button>'
+          +   '<span class="send-status" id="status-' + reg.id + '"></span>'
+          +   '</div>'
+        )
+      + '</div>';
+  }).join("");
+}
+
+// ── Enviar plano de uma regional ────────────────────
+async function enviar(regId) {
+  const mes = selMes.value, ano = selAno.value;
+  const txt    = document.getElementById("txt-" + regId);
+  const card   = txt.closest(".reg-card");
+  const btn    = card.querySelector(".btn-enviar");
+  const status = document.getElementById("status-" + regId);
+
+  if (!txt.value.trim()) {
+    status.textContent = "⚠️ Preencha ao menos uma ação.";
+    status.className   = "send-status err";
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = "Enviando...";
+
+  try {
+    await db.collection(COL).doc(ano + "-" + mes).set(
+      { [regId]: { texto: txt.value.trim(), enviado: true, enviadoEm: new Date().toISOString() }},
+      { merge: true }
+    );
+    txt.disabled = true;
+    card.querySelector(".send-row").remove();
+    card.classList.add("enviado");
+    card.insertAdjacentHTML("beforeend", '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600">✅ Plano enviado com sucesso.</p>');
+    _enviarEmailExcessos(regId, mes, ano);
+  } catch(e) {
+    btn.disabled = false; btn.textContent = "Enviar";
+    status.textContent = "❌ Erro ao enviar. Tente novamente.";
+    status.className = "send-status err";
+  }
+}
+
+// Inicializa EmailJS
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+function _enviarEmailExcessos(regId, mes, ano) {
+  var mesIdx  = MESES.indexOf(mes);
+  var mesNome = mesIdx >= 0 ? MESES_FULL[mesIdx] : mes;
+  var regNome = REGIONAL_NOME[regId] || regId;
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email: EMAIL_DESTINO,
+    empresa:  regNome,
+    mes:      mesNome + ' de ' + ano,
+    mensagem: 'Prezados,\nPlano de ação de Excessos de Velocidade da '
+              + regNome + ', referente ao mês de ' + mesNome + ' de ' + ano
+              + ', foi preenchido.'
+  }).then(function() {
+    console.log('[EmailJS] Email excessos enviado');
+  }).catch(function(err) {
+    console.warn('[EmailJS] Erro:', err);
+  });
+}
+
+carregarDados();
+</script>
+</body>
+</html>
