@@ -1363,7 +1363,12 @@ function sinHandleAction(action, dataset, el) {
     if (step === 3) { sinState.slideIdx = 0; _sinAutoSalvarFirebase(); sinRender(); return; }
     if (step === 2) {
       sinRender();
-      _sinCarregarFirebase().then(function() { sinRender(); });
+      // So recarrega do Firebase na PRIMEIRA entrada no Step 2 (evita sobrescrever
+      // planos importados ou edicoes feitas em memoria ao navegar entre etapas)
+      if (!sinState._fbCarregado) {
+        sinState._fbCarregado = true;
+        _sinCarregarFirebase().then(function() { sinRender(); });
+      }
       return;
     }
     sinRender();
