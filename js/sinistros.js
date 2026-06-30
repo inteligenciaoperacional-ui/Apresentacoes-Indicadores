@@ -609,7 +609,7 @@ function sinSlidePlanoHTML(empId, planoData, mes, ano, analista) {
   return '<div class="slide">'
     + sinHeader()
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-shrink:0">'
-    +   '<div class="slide-plano__title">Plano de Acao</div>'
+    +   '<div class="slide-plano__title">Plano de Ação</div>'
     +   '<img src="' + emp.logo + '" style="height:36px;width:auto;object-fit:contain" crossorigin="anonymous" alt="' + emp.label + '">'
     + '</div>'
     + '<div class="slide-plano__table">'
@@ -618,7 +618,7 @@ function sinSlidePlanoHTML(empId, planoData, mes, ano, analista) {
     +   '<div class="slide-plano__table-row">'
     +     '<div class="slide-plano__table-cell"><strong>Sinistros:</strong> ' + sinQt + '</div>'
     +   '</div>'
-    +   '<div class="slide-plano__table-sub">' + fw("Plano de Acao " + prox) + '</div>'
+    +   '<div class="slide-plano__table-sub">' + fw("Plano de Ação " + prox) + '</div>'
     + '</div>'
     + '<div class="slide-plano__actions">' + bullets + '</div>'
     + sinFooter(analista)
@@ -1063,8 +1063,23 @@ async function sinGerarPDF(sinState) {
         if (hbar2C) charts.push(sinCreateHBarChartSync(hbar2C, top5,  "nome", "qtd", emp.cor, "km"));
       }
 
+      // Aguarda todas as imagens do slide carregarem (logos, etc.) antes de capturar.
+      // Isso evita capturas em branco/pretas quando o crossorigin ainda nao resolveu.
+      var imgs = box.querySelectorAll("img");
+      await Promise.all(Array.prototype.map.call(imgs, function(img) {
+        if (img.complete) return Promise.resolve();
+        return new Promise(function(res) {
+          img.onload  = res;
+          img.onerror = res;
+          setTimeout(res, 1500); // failsafe
+        });
+      }));
+
       await new Promise(function(r) { requestAnimationFrame(r); });
-      await new Promise(function(r) { setTimeout(r, 250); });
+      // Slides sem grafico (capa, contra-capa, plano de acao) usam delay menor;
+      // slides com grafico (charts.length > 0) usam delay maior para o Chart.js terminar de desenhar
+      var delay = charts.length > 0 ? 600 : 300;
+      await new Promise(function(r) { setTimeout(r, delay); });
 
       var canvas = await html2canvas(box, {
         scale: 4, useCORS: true, allowTaint: false,
