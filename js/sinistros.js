@@ -1652,13 +1652,19 @@ async function _sinCarregarTextosPlano() {
     const fb  = doc.exists ? doc.data() : {};
     SIN_EMPRESAS.forEach(function(emp) {
       var div = document.getElementById("sin-plano-texto-" + emp.id);
-      if (!div) return;
       var p = fb[emp.id] || {};
       if (!p.enviado || !p.texto) {
-        div.innerHTML = '<div style="color:#aaa;font-size:12px;font-style:italic">&#9203; Aguardando envio do time.</div>';
-      } else {
+        if (div) div.innerHTML = '<div style="color:#aaa;font-size:12px;font-style:italic">&#9203; Aguardando envio do time.</div>';
+        return;
+      }
+      if (div) {
         div.dataset.texto = p.texto;
         div.innerHTML     = _planoTextoReadHTML(emp.id, p.texto, "sin-plano-texto-");
+      }
+      // Sincroniza automaticamente com o estado usado pelos slides da apresentacao,
+      // garantindo que o texto exibido aqui seja sempre o mesmo do Plano de Acao
+      if (sinState.dados[emp.id]) {
+        sinState.dados[emp.id].planoAcao.texto = p.texto;
       }
     });
   } catch(e) { console.warn("sin carregar textos:", e); }
