@@ -219,10 +219,10 @@ function _enviarEmailExcessos(regId, mes, ano) {
   var mesFull = MESES_FULL_PT[mesIdx] || mesNome;
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
     to_email: EMAIL_DESTINO,
-    assunto:  'Plano de Ação | Excessos de Velocidade | ' + mesFull + ' ' + ano,
+    assunto:  'Plano de Ação | Multas de Trânsito | ' + mesFull + ' ' + ano,
     empresa:  regNome,
     mes:      mesFull + ' de ' + ano,
-    mensagem: 'Prezados, boa tarde. Plano de ação de Excessos de Velocidade da '
+    mensagem: 'Prezados, boa tarde. Plano de ação de Multas de Trânsito da '
               + regNome + ', referente ao mês de ' + mesFull + ' de ' + ano
               + ', foi preenchido.'
   }).then(function() {
