@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dln0ctawv/image/upload/v1781288131/Intelig%C3%AAncia_branco_m524fk_pmmcig.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JCA — Plano de Ação · Sinistros</title>
   <style>
@@ -230,14 +229,20 @@ async function enviar(empId) {
 // ── Iniciar ─────────────────────────────────────────
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
+var MESES_FULL_SIN = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
 function _enviarEmailSinistros(empId, mes, ano) {
-  var empresa = EMPRESA_NOME_SIN[empId] || empId;
+  var empresa  = EMPRESA_NOME_SIN[empId] || empId;
+  var mesIdx   = MESES.indexOf(mes);
+  var mesNome  = mesIdx >= 0 ? MESES_FULL_SIN[mesIdx] : mes;
+  var assunto  = 'Plano de Ação | Sinistros | ' + mesNome + ' ' + ano;
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
     to_email: EMAIL_DESTINO,
     empresa:  empresa,
-    mes:      mes + ' de ' + ano,
+    mes:      mesNome + ' de ' + ano,
+    assunto:  assunto,
     mensagem: 'Prezados, boa tarde.\n\nPlano de ação de Sinistros da ' + empresa
-              + ', referente ao mês de ' + mes + ' de ' + ano
+              + ', referente ao mês de ' + mesNome + ' de ' + ano
               + ', foi preenchido.'
   }).then(function() {
     console.log('[EmailJS] Email sinistros enviado');
