@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dln0ctawv/image/upload/v1781288131/Intelig%C3%AAncia_branco_m524fk_pmmcig.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JCA — Plano de Ação · Reclamações de Clientes</title>
   <style>
@@ -528,14 +527,25 @@ function enviar(empId){
 }
 
 function _enviarEmail(empId, id, caus, acoes){
-  var mesIdx=parseInt(selMes.value), ano=selAno.value;
-  var empresa=EMPRESA_NOME[empId]||empId;
-  var mesNome=MESES_FULL[mesIdx];
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,{
-    to_email:EMAIL_DESTINO, empresa:empresa,
-    mes:mesNome+' de '+ano,
-    mensagem:'Prezados,\nPlano de ação de Reclamações de Clientes da '+empresa+', referente ao mês de '+mesNome+' de '+ano+', foi preenchido.'
-  }).then(function(){console.log('[EmailJS] OK');}).catch(function(e){console.warn('[EmailJS]',e);});
+  var mesIdx  = parseInt(selMes.value);
+  var ano     = selAno.value;
+  var empresa = EMPRESA_NOME[empId] || empId;
+  var mesNome = MESES_FULL[mesIdx];
+
+  var assunto  = 'Plano de Ação | Reclamações de Clientes | ' + mesNome + ' ' + ano;
+  var mensagem = 'Prezados, boa tarde.\n\n'
+    + 'Plano de ação de Reclamações de Clientes da ' + empresa
+    + ', referente ao mês de ' + mesNome + ' de ' + ano
+    + ', foi preenchido.';
+
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email: EMAIL_DESTINO,
+    assunto:  assunto,
+    empresa:  empresa,
+    mes:      mesNome + ' de ' + ano,
+    mensagem: mensagem
+  }).then(function(){ console.log('[EmailJS] OK'); })
+    .catch(function(e){ console.warn('[EmailJS]', e); });
 }
 
 
