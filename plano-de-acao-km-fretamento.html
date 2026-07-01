@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dln0ctawv/image/upload/v1781288131/Intelig%C3%AAncia_branco_m524fk_pmmcig.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JCA — Plano de Ação · KM Fretamento</title>
   <style>
@@ -107,8 +106,8 @@ var EMPS = [
 
 // ── Seletores de período (padrão: mês anterior) ───────────────
 var now       = new Date();
-var mesPadrao = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
-var anoPadrao = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+var mesPadrao = now.getMonth();
+var anoPadrao = now.getFullYear();
 
 var selMes = document.getElementById("sel-mes");
 var selAno = document.getElementById("sel-ano");
@@ -283,6 +282,7 @@ function _enviarEmail(empId) {
     to_email: EMAIL_DESTINO,
     empresa:  empresa,
     mes:      mesNome + " de " + ano,
+    assunto:  "Plano de Ação | KM Fretamento | " + mesNome + " " + ano,
     mensagem: "Prezados,\nPlano de ação de KM Fretamento da " + empresa
               + ", referente ao mês de " + mesNome + " de " + ano + ", foi preenchido."
   }).then(function() {
