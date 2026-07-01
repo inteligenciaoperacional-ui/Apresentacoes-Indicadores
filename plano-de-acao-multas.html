@@ -153,6 +153,7 @@ function _enviarEmailNotificacao(empId, docId) {
   var empresa = EMPRESA_NOME[empId] || empId;
 
   var params = {
+    assunto:  'Plano de Ação | Multas Regulatórias | ' + mesNome + ' ' + ano,
     to_email: EMAIL_DESTINO,
     empresa:  empresa,
     mes:      mesNome + ' de ' + ano,
