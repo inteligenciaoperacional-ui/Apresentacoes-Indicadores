@@ -2,40 +2,48 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dln0ctawv/image/upload/v1781288131/Intelig%C3%AAncia_branco_m524fk_pmmcig.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JCA — Plano de Ação · Multas de Trânsito</title>
+  <title>JCA — Plano de Ação · Excessos de Velocidade</title>
   <style>
     :root { --navy:#1d3061; --red:#c0392b; --border:#e0e0e0; --bg:#f5f6fa; --muted:#888; }
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
     body { font-family:system-ui,sans-serif; background:var(--bg); color:#333; }
 
     .header { background:var(--navy); padding:14px 24px; display:flex; align-items:center; gap:16px; }
-    .header img.logo-jca { height:32px; }
+    .header img { height:32px; }
     .header__title { color:white; font-weight:700; font-size:15px; }
-    .header__right { margin-left:auto; display:flex; align-items:center; gap:10px; }
-    .header select { padding:5px 10px; border-radius:6px; border:none; font-size:13px; }
-    .header label  { color:rgba(255,255,255,.7); font-size:11px; margin:0; }
+    .header__right  { margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .header select  { padding:5px 10px; border-radius:6px; border:none; font-size:13px; }
 
     .container { max-width:860px; margin:28px auto; padding:0 16px 60px; }
 
-    .emp-card { background:white; border-radius:12px; padding:22px; margin-bottom:18px; box-shadow:0 1px 6px rgba(0,0,0,.06); }
-    .emp-logo { height:38px; object-fit:contain; margin-bottom:14px; display:block; }
+    .reg-card { background:white; border-radius:12px; padding:22px;
+                margin-bottom:18px; box-shadow:0 1px 6px rgba(0,0,0,.06); }
+    .reg-card.enviado { opacity:.7; pointer-events:none; }
 
-    .motivos-box { background:#f8f8f8; border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:16px; }
-    .motivos-titulo { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:8px; }
-    .motivo-item { display:flex; align-items:baseline; gap:8px; padding:4px 0; border-bottom:1px solid #eee; font-size:13px; }
-    .motivo-item:last-child { border-bottom:none; }
-    .motivo-qtde { background:var(--navy); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; flex-shrink:0; }
-    .motivo-desc { flex:1; font-weight:500; }
+    .reg-card__title { font-size:14px; font-weight:700; color:var(--navy);
+                       border-bottom:2px solid var(--navy); padding-bottom:8px; margin-bottom:16px; }
 
-    label.field-label { display:block; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
-    textarea { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; color:var(--navy); resize:vertical; outline:none; line-height:1.6; }
+    .ref-box { background:#f0f4ff; border-radius:8px; padding:12px 16px;
+               display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+    .ref-row2 { grid-template-columns:1fr 1fr 1fr 1fr; }
+    .ref-label { font-size:10px; font-weight:700; color:var(--muted);
+                 text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+    .ref-value { font-size:15px; font-weight:700; color:var(--navy); min-height:20px; }
+    .ref-value.empty { color:#ccc; font-style:italic; font-weight:400; font-size:13px; }
+
+    label { display:block; font-size:10px; font-weight:700; color:var(--muted);
+            text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+    textarea { width:100%; padding:10px 12px; border:1px solid var(--border);
+               border-radius:8px; font-size:13px; font-family:inherit;
+               color:var(--navy); resize:vertical; outline:none; line-height:1.6; }
     textarea:focus { border-color:var(--navy); }
     textarea:disabled { background:#f5f5f5; color:#999; cursor:not-allowed; }
 
     .send-row { display:flex; align-items:center; gap:12px; margin-top:14px; }
-    .btn-enviar { padding:10px 28px; border-radius:8px; border:none; font-size:13px; font-family:inherit; cursor:pointer; font-weight:700; background:var(--navy); color:white; }
+    .btn-enviar { padding:10px 28px; border-radius:8px; border:none;
+                  font-size:13px; font-family:inherit; cursor:pointer;
+                  font-weight:700; background:var(--navy); color:white; }
     .btn-enviar:hover { opacity:.88; }
     .btn-enviar:disabled { background:#aaa; cursor:not-allowed; }
     .send-status { font-size:12px; font-weight:600; }
@@ -49,12 +57,12 @@
 <body>
 
 <div class="header">
-  <img class="logo-jca" src="https://res.cloudinary.com/dln0ctawv/image/upload/v1779238658/JCA_1_mp1ic7.png" alt="JCA">
-  <span class="header__title">Plano de Ação — Multas de Trânsito</span>
+  <img src="https://res.cloudinary.com/dln0ctawv/image/upload/v1779238658/JCA_1_mp1ic7.png" alt="JCA">
+  <span class="header__title">Plano de Ação — Excessos de Velocidade</span>
   <div class="header__right">
-    <label>MÊS</label>
+    <label style="color:rgba(255,255,255,.7);font-size:11px;margin:0">MÊS</label>
     <select id="sel-mes"></select>
-    <label>ANO</label>
+    <label style="color:rgba(255,255,255,.7);font-size:11px;margin:0">ANO</label>
     <select id="sel-ano"></select>
   </div>
 </div>
@@ -63,13 +71,12 @@
   <div class="loading">Carregando dados...</div>
 </div>
 
-<footer>JCA — Inteligência Operacional · Plano de Ação · Multas de Trânsito</footer>
+<footer>JCA — Inteligência Operacional · Plano de Ação · Excessos de Velocidade</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script>
-// ── Firebase ────────────────────────────────────────────
 firebase.initializeApp({
   apiKey:            "AIzaSyBoAgfudElHnMLPF9i9aplwc2sd9-zmT3E",
   authDomain:        "apresentacoes-indicadores.firebaseapp.com",
@@ -78,129 +85,104 @@ firebase.initializeApp({
   messagingSenderId: "508186104156",
   appId:             "1:508186104156:web:a52ab3848db24c7555b199"
 });
-var db = firebase.firestore();
+const db  = firebase.firestore();
+const COL = "planos_excessos";
 
-var COL_DADOS  = "multas_transito";          // onde os motivos estão
-var COL_PLANOS = "planos_multas_transito";   // onde as respostas vão
+// ── EmailJS ──────────────────────────────────────────
+const EMAILJS_SERVICE_ID  = 'service_0kojgve';
+const EMAILJS_TEMPLATE_ID = 'template_ddaj648';
+const EMAILJS_PUBLIC_KEY  = '9rWOQnvMgz5XPEP1v';
+const EMAIL_DESTINO       = 'inteligenciaoperacional@viacaocometa.com.br';
+const MESES_FULL = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const REGIONAL_NOME = { RIO: 'Regional Rio', SUL: 'Regional Sul', SAO: 'Regional São Paulo' };
 
-// ── EmailJS ─────────────────────────────────────────────
-var EMAILJS_SERVICE_ID  = 'service_0kojgve';
-var EMAILJS_TEMPLATE_ID = 'template_ddaj648';
-var EMAILJS_PUBLIC_KEY  = '9rWOQnvMgz5XPEP1v';
-var EMAIL_DESTINO       = 'inteligenciaoperacional@viacaocometa.com.br';
-
-var EMPRESA_NOME = {
-  '1001':  'Auto Viação 1001',
-  '1001u': 'Auto Viação 1001 Urbano',
-  'cat':   'Auto Viação Catarinense',
-  'com':   'Viação Cometa'
-};
-
-var MESES_ABREV = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-var MESES_FULL  = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-
-var EMPS = [
-  { id:"1001",  logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671790/1001_qisjtr_1_pzpzqw.png" },
-  { id:"1001u", logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1781307419/1001_URB_m1lbdu.png" },
-  { id:"cat",   logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671813/AVC_zk4pe9_k4jgau.png" },
-  { id:"com",   logo:"https://res.cloudinary.com/dln0ctawv/image/upload/v1779671826/COM_folzln_ddghpr.png" }
+const MESES_FULL_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const REGS  = [
+  { id:"RIO", label:"Regional RIO" },
+  { id:"SUL", label:"Regional SUL" },
+  { id:"SAO", label:"Regional SAO" }
 ];
 
-// ── Seletores de período (padrão: mês anterior) ─────────
-var now       = new Date();
-var mesPadrao = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
-var anoPadrao = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+// ── Seletores de período ────────────────────────────
+const now = new Date();
+const selMes = document.getElementById("sel-mes");
+const selAno = document.getElementById("sel-ano");
 
-var selMes = document.getElementById("sel-mes");
-var selAno = document.getElementById("sel-ano");
-
-MESES_FULL.forEach(function(nome, i) {
-  var opt = document.createElement("option");
-  opt.value = i; opt.textContent = nome;
-  if (i === mesPadrao) opt.selected = true;
+MESES.forEach(function(m, i) {
+  const opt = document.createElement("option");
+  opt.value = m; opt.textContent = m;
+  if (i === (now.getMonth() + 11) % 12) opt.selected = true;
   selMes.appendChild(opt);
 });
 [now.getFullYear() - 1, now.getFullYear()].forEach(function(a) {
-  var opt = document.createElement("option");
+  const opt = document.createElement("option");
   opt.value = a; opt.textContent = a;
-  if (a === anoPadrao) opt.selected = true;
+  if (a === now.getFullYear()) opt.selected = true;
   selAno.appendChild(opt);
 });
 
 selMes.addEventListener("change", carregarDados);
 selAno.addEventListener("change", carregarDados);
 
-function docId() {
-  var mesIdx = parseInt(selMes.value);
-  var ano    = selAno.value;
-  return ano + "-" + String(mesIdx + 1).padStart(2, "0");
-}
+// ── Carregar dados do Firebase ──────────────────────
+async function carregarDados() {
+  const mes = selMes.value, ano = selAno.value;
+  const container = document.getElementById("container");
+  container.innerHTML = '<div class="loading">Carregando...</div>';
 
-// ── Carregar dados ──────────────────────────────────────
-function carregarDados() {
-  var mesIdx   = parseInt(selMes.value);
-  var ano      = selAno.value;
-  var mesLabel = MESES_ABREV[mesIdx] + "/" + ano;
+  let fbData = {};
+  try {
+    const doc = await db.collection(COL).doc(ano + "-" + mes).get();
+    if (doc.exists) fbData = doc.data();
+  } catch(e) { console.warn("Firebase load:", e); }
 
-  document.getElementById("container").innerHTML = '<div class="loading">Carregando...</div>';
+  container.innerHTML = REGS.map(function(reg) {
+    const d       = fbData[reg.id] || {};
+    const enviado = !!d.enviado;
 
-  Promise.all([
-    db.collection(COL_DADOS).doc(docId()).get().catch(function() { return null; }),
-    db.collection(COL_PLANOS).doc(docId()).get().catch(function() { return null; })
-  ]).then(function(results) {
-    var dadosSnap  = results[0];
-    var planosSnap = results[1];
-
-    var dadosEmp  = (dadosSnap  && dadosSnap.exists)  ? (dadosSnap.data().dados  || {}) : {};
-    var planosEmp = (planosSnap && planosSnap.exists)  ? (planosSnap.data()       || {}) : {};
-
-    var html = EMPS.map(function(emp) {
-      var d       = dadosEmp[emp.id]  || {};
-      var p       = planosEmp[emp.id] || {};
-      var motivos = (d.motivos || []).filter(function(m) { return m.descricao; });
-      var enviado = !!p.enviado;
-      var texto   = p.resposta || p.texto || "";
-
-      var motivosHTML = motivos.length
-        ? motivos.map(function(m) {
-            var qtd = parseInt(m.qtde) || 0;
-            return '<div class="motivo-item">'
-              + '<span class="motivo-qtde">' + (qtd < 10 ? "0" + qtd : qtd) + '</span>'
-              + '<span class="motivo-desc">' + (m.descricao || "") + '</span>'
-              + '</div>';
-          }).join("")
-        : '<div style="color:#bbb;font-style:italic;font-size:13px;">Sem motivos registrados para este período</div>';
-
-      return '<div class="emp-card" id="card-' + emp.id + '">'
-        + '<img src="' + emp.logo + '" class="emp-logo" alt="' + emp.id + '">'
-        + '<div class="motivos-box">'
-        +   '<div class="motivos-titulo">Principais Motivos — ' + mesLabel + '</div>'
-        +   motivosHTML
-        + '</div>'
-        + '<label class="field-label">Plano de Ação (uma ação por linha)</label>'
-        + '<textarea id="txt-' + emp.id + '" rows="5"' + (enviado ? ' disabled' : '')
-        +   ' placeholder="Convocação dos motoristas infratores;\nAtuação junto à equipe de instrutores;\nMonitoramento dos horários críticos;">'
-        +   texto
-        + '</textarea>'
-        + (enviado
-            ? '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600;">✅ Plano enviado com sucesso.</p>'
-            : '<div class="send-row">'
-            +   '<button class="btn-enviar" onclick="enviar(\'' + emp.id + '\',\'' + docId() + '\')">Enviar</button>'
-            +   '<span class="send-status" id="status-' + emp.id + '"></span>'
-            + '</div>'
-          )
+    function refVal(val, label) {
+      const empty = !val;
+      return '<div>'
+        + '<div class="ref-label">' + label + '</div>'
+        + '<div class="ref-value' + (empty ? ' empty' : '') + '">' + (val || 'Aguardando analista...') + '</div>'
         + '</div>';
-    }).join("");
+    }
 
-    document.getElementById("container").innerHTML = html;
-  });
+    return '<div class="reg-card' + (enviado ? ' enviado' : '') + '" id="card-' + reg.id + '">'
+      + '<div class="reg-card__title">' + reg.label + '</div>'
+      + '<div class="ref-box" style="grid-template-columns:1fr 1fr 1fr 1fr">'
+      +   refVal(d.qtdExcessos, 'Qtd. Excessos do Mês')
+      +   refVal(d.a1000km,     'Excessos a cada 1000km')
+      +   refVal(d.setorNI,     'Principal Setor (NI)')
+      +   refVal(d.qtdNI,       'Qtd. Excessos NI')
+      + '</div>'
+      + '<label>Ações do Plano (uma ação por linha)</label>'
+      + '<div class="textarea-wrap">'
+      +   '<textarea id="txt-' + reg.id + '" rows="5"'
+      +   (enviado ? ' disabled' : '')
+      +   ' placeholder="Convocação dos motoristas infratores;\nAtuação junto à equipe de instrutores;\nDivulgação das linhas de maior reincidência;">'
+      +   (d.texto || '')
+      +   '</textarea>'
+      + '</div>'
+      + (enviado
+          ? '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600">✅ Plano enviado com sucesso.</p>'
+          : '<div class="send-row">'
+          +   '<button class="btn-enviar" onclick="enviar(\'' + reg.id + '\')">Enviar</button>'
+          +   '<span class="send-status" id="status-' + reg.id + '"></span>'
+          +   '</div>'
+        )
+      + '</div>';
+  }).join("");
 }
 
-// ── Enviar plano ────────────────────────────────────────
-function enviar(empId, dId) {
-  var txt    = document.getElementById("txt-" + empId);
-  var btn    = txt.closest(".emp-card").querySelector(".btn-enviar");
-  var status = document.getElementById("status-" + empId);
+// ── Enviar plano de uma regional ────────────────────
+async function enviar(regId) {
+  const mes = selMes.value, ano = selAno.value;
+  const txt    = document.getElementById("txt-" + regId);
+  const card   = txt.closest(".reg-card");
+  const btn    = card.querySelector(".btn-enviar");
+  const status = document.getElementById("status-" + regId);
 
   if (!txt.value.trim()) {
     status.textContent = "⚠️ Preencha ao menos uma ação.";
@@ -209,50 +191,47 @@ function enviar(empId, dId) {
   }
 
   btn.disabled = true; btn.textContent = "Enviando...";
-  status.textContent = "";
 
-  var update = {};
-  update[empId + ".resposta"]  = txt.value.trim();
-  update[empId + ".texto"]     = txt.value.trim();
-  update[empId + ".enviado"]   = true;
-  update[empId + ".enviadoEm"] = new Date().toISOString();
-
-  db.collection(COL_PLANOS).doc(dId).set(update, { merge: true })
-    .then(function() {
-      txt.disabled = true;
-      var row = txt.closest(".emp-card").querySelector(".send-row");
-      if (row) row.remove();
-      txt.closest(".emp-card").insertAdjacentHTML("beforeend",
-        '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600;">✅ Plano enviado com sucesso.</p>');
-      _enviarEmail(empId, dId);
-    })
-    .catch(function(e) {
-      btn.disabled = false; btn.textContent = "Enviar";
-      status.textContent = "❌ Erro: " + e.message;
-      status.className = "send-status err";
-    });
+  try {
+    await db.collection(COL).doc(ano + "-" + mes).set(
+      { [regId]: { texto: txt.value.trim(), enviado: true, enviadoEm: new Date().toISOString() }},
+      { merge: true }
+    );
+    txt.disabled = true;
+    card.querySelector(".send-row").remove();
+    card.classList.add("enviado");
+    card.insertAdjacentHTML("beforeend", '<p style="color:#1a7a3c;font-size:12px;margin-top:8px;font-weight:600">✅ Plano enviado com sucesso.</p>');
+    _enviarEmailExcessos(regId, mes, ano);
+  } catch(e) {
+    btn.disabled = false; btn.textContent = "Enviar";
+    status.textContent = "❌ Erro ao enviar. Tente novamente.";
+    status.className = "send-status err";
+  }
 }
 
-function _enviarEmail(empId, dId) {
-  var mesIdx  = parseInt(dId.split('-')[1]) - 1;
-  var ano     = dId.split('-')[0];
-  var empresa = EMPRESA_NOME[empId] || empId;
-  var mesNome = MESES_FULL[mesIdx] || '';
+// Inicializa EmailJS
+emailjs.init(EMAILJS_PUBLIC_KEY);
 
+function _enviarEmailExcessos(regId, mes, ano) {
+  var mesIdx  = MESES.indexOf(mes);
+  var mesNome = mesIdx >= 0 ? MESES_FULL[mesIdx] : mes;
+  var regNome = REGIONAL_NOME[regId] || regId;
+  var mesFull = MESES_FULL_PT[mesIdx] || mesNome;
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
     to_email: EMAIL_DESTINO,
-    empresa:  empresa,
-    mes:      mesNome + ' de ' + ano,
-    mensagem: 'Prezados,\nPlano de ação de Multas de Trânsito da ' + empresa
-              + ', referente ao mês de ' + mesNome + ' de ' + ano + ', foi preenchido.'
+    assunto:  'Plano de Ação | Excessos de Velocidade | ' + mesFull + ' ' + ano,
+    empresa:  regNome,
+    mes:      mesFull + ' de ' + ano,
+    mensagem: 'Prezados, boa tarde. Plano de ação de Excessos de Velocidade da '
+              + regNome + ', referente ao mês de ' + mesFull + ' de ' + ano
+              + ', foi preenchido.'
   }).then(function() {
-    console.log('[EmailJS] MT email enviado');
+    console.log('[EmailJS] Email excessos enviado');
   }).catch(function(err) {
     console.warn('[EmailJS] Erro:', err);
   });
 }
 
-emailjs.init(EMAILJS_PUBLIC_KEY);
 carregarDados();
 </script>
 </body>
